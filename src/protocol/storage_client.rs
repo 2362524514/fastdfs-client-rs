@@ -1,7 +1,7 @@
 use std::io;
 use std::io::ErrorKind;
 use tokio::io::AsyncWriteExt;
-use crate::protocol::pool::connection_pool::CONNECTION_POOL;
+use crate::protocol::pool::connection_pool::{get_connection_pool};
 use crate::protocol::proto_common;
 use crate::protocol::tracker_server::TrackerServer;
 
@@ -21,7 +21,7 @@ impl StorageClient {
                 let storage_server = &storage_servers[index];
                 let host = storage_server.ip.to_string() +":"+ &storage_server.port.to_string();
                 let mut offset = 0;
-                if let Ok(mut stream) = CONNECTION_POOL.get_connection(&host).await{
+                if let Ok(mut stream) = get_connection_pool().get_connection(&host).await{
                     let mut ext_name_bs = vec![0u8;proto_common::FDFS_FILE_EXT_NAME_MAX_LEN];
                     let origin_ext_name_bs = file_ext_name.as_bytes();
 
@@ -43,7 +43,6 @@ impl StorageClient {
                     whole_pkg[header.len()..header.len()+ size_bytes.len()].copy_from_slice(&size_bytes[..size_bytes.len()]);
                     offset = header.len() + size_bytes.len();
                     whole_pkg[offset..offset+ext_name_bs.len()].copy_from_slice(&ext_name_bs[..ext_name_bs.len()]);
-                    offset += ext_name_bs.len();
                     stream.write(&whole_pkg).await?;
                     stream.write(&file_buff).await?;
                     let recv_info = proto_common::recv_package(&mut stream, proto_common::STORAGE_PROTO_CMD_RESP, None).await?;

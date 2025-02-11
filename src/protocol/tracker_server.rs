@@ -1,6 +1,6 @@
 use crate::config::settings::get_settings;
 use crate::protocol::pool::connection_manager::TcpManager;
-use crate::protocol::pool::connection_pool::CONNECTION_POOL;
+use crate::protocol::pool::connection_pool::{get_connection_pool};
 use crate::protocol::proto_common;
 use crate::protocol::proto_common::pack_header;
 use crate::protocol::storage_server::StorageServer;
@@ -23,7 +23,7 @@ impl TrackerServer {
         for i in 0..len {
             let index = (random_start_index + i) % len ;
             let tracker_server = &tracker_servers[index];
-            let result = CONNECTION_POOL.get_connection(tracker_server).await;
+            let result = get_connection_pool().get_connection(tracker_server).await;
             if let Ok(connection) = result {
                 return Ok(connection);
             }

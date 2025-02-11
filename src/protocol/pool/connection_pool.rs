@@ -5,10 +5,11 @@ use std::io::Error;
 use deadpool_runtime::Runtime;
 use tokio::time::Duration;
 
-lazy_static!{
 
+static CONNECTION_POOL2: OnceLock<MultiTargetPool> = OnceLock::new();
 
-     pub static ref CONNECTION_POOL:MultiTargetPool = {
+pub fn get_connection_pool() -> &'static MultiTargetPool {
+    CONNECTION_POOL2.get_or_init(|| {
         // let  settings = tokio::task::block_in_place(|| SETTINGS.blocking_read().clone());
         let  settings = settings::get_settings(None);
         let connect_timeout = settings.connect_timeout;
@@ -20,8 +21,10 @@ lazy_static!{
             Some(Duration::from_secs(idel_timeout)),
             Some(Duration::from_secs(max_lifetime)),
         )
-    };
+    })
 }
+
+
 
 
 /// MultiTargetPool 用于管理多个目标地址对应的 deadpool 池，内部使用 DashMap 实现映射
@@ -102,8 +105,7 @@ impl MultiTargetPool {
 
 
 use std::io;
-use std::sync::Arc;
-use lazy_static::lazy_static;
+use std::sync::{Arc, OnceLock};
 use crate::config::settings;
 
 #[tokio::test]
