@@ -1,4 +1,4 @@
-use crate::config::settings::SETTINGS;
+use crate::config::settings::get_settings;
 use crate::protocol::pool::connection_manager::TcpManager;
 use crate::protocol::pool::connection_pool::CONNECTION_POOL;
 use crate::protocol::proto_common;
@@ -13,7 +13,8 @@ pub struct TrackerServer;
 
 impl TrackerServer {
     pub async fn get_tracker_server_connection() -> Result<Object<TcpManager>,io::Error>{
-        let tracker_servers = &SETTINGS.read().await.tracker_server;
+        // let tracker_servers = &SETTINGS.read().await.tracker_server;
+        let tracker_servers = &get_settings(None).tracker_server;
         let len = tracker_servers.len();
         if len == 0 {
             return Err(io::Error::new(io::ErrorKind::Other,"tracker_server配置不存在!"));

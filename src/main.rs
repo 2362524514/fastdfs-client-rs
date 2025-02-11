@@ -1,9 +1,9 @@
 use std::io;
 use std::path::Path;
-use dlgump_fastdfs_client_rs::protocol::storage_client::StorageClient;
+use fastdfs_client_rs::protocol::storage_client::StorageClient;
 
-#[tokio::test]
-async fn example_upload() -> Result<(), io::Error>{
+#[tokio::main]
+async fn main() -> Result<(), io::Error>{
     let location = "C:\\Users\\dlgump\\Desktop\\国际摩尔斯电码.svg.png";
     let path = Path::new(location);
     let file_ext_name = path.extension().unwrap().to_str().unwrap().to_string();

@@ -1,8 +1,6 @@
-
 use config::{Config, ConfigError, File, FileFormat};
-use lazy_static::lazy_static;
 use serde::Deserialize;
-use tokio::sync::RwLock;
+use std::sync::OnceLock;
 
 #[derive(Debug,Deserialize,Clone)]
 pub struct Settings {
@@ -56,7 +54,19 @@ fn load_settings(config_file:&str) -> Result<Settings,ConfigError>{
     Ok(settings)
 }
 
+static SETTINGS: OnceLock<Settings> = OnceLock::new();
 
-lazy_static! {
-    pub static ref SETTINGS: RwLock<Settings> = RwLock::new(load_settings("fastdfs.conf").unwrap());
+
+/**
+ * 第一次调用时加载配置文件，之后直接返回配置，默认路径为 fastdfs.conf
+ */
+pub fn get_settings(location_opt: Option<&str>) -> &'static Settings {
+    SETTINGS.get_or_init(|| {
+        let path = if let Some(location) = location_opt {
+            location
+        }else{
+            "fastdfs.conf"
+        };
+        load_settings(path).unwrap()
+    })
 }

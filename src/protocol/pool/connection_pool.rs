@@ -9,7 +9,8 @@ lazy_static!{
 
 
      pub static ref CONNECTION_POOL:MultiTargetPool = {
-        let  settings = tokio::task::block_in_place(|| SETTINGS.blocking_read().clone());
+        // let  settings = tokio::task::block_in_place(|| SETTINGS.blocking_read().clone());
+        let  settings = settings::get_settings(None);
         let connect_timeout = settings.connect_timeout;
         let idel_timeout = settings.connection_pool.max_idle_time;
         let max_lifetime = settings.connection_pool.max_wait_time_in_ms;
@@ -103,7 +104,7 @@ impl MultiTargetPool {
 use std::io;
 use std::sync::Arc;
 use lazy_static::lazy_static;
-use crate::config::settings::SETTINGS;
+use crate::config::settings;
 
 #[tokio::test]
 async fn test() -> Result<(), io::Error> {
