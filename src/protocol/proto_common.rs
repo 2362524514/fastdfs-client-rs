@@ -2,6 +2,7 @@ use crate::protocol::pool::connection_manager::TcpManager;
 use deadpool::managed::Object;
 use std::io;
 use tokio::io::AsyncReadExt;
+use tokio::net::TcpStream;
 
 pub static TRACKER_PROTO_CMD_SERVICE_QUERY_STORE_WITHOUT_GROUP_ALL:u8 = 106;
 
@@ -28,6 +29,8 @@ pub static FDFS_FILE_EXT_NAME_MAX_LEN:usize = 6;
 pub static TRACKER_QUERY_STORAGE_STORE_BODY_LEN:usize = FDFS_GROUP_NAME_MAX_LEN as usize + FDFS_IPADDR_SIZE + FDFS_PROTO_PKG_LEN_SIZE;
 
 pub static STORAGE_PROTO_CMD_RESP:u8 = TRACKER_PROTO_CMD_RESP;
+
+pub static FDFS_PROTO_CMD_ACTIVE_TEST:u8 = 111;
 
 
 
@@ -91,7 +94,7 @@ pub async fn recv_package(input: &mut Object<TcpManager>,expect_cmd:u8,expect_bo
     Ok(RecvPackageInfo { errno:0, body })
 }
 
-pub async fn recv_header(input: &mut Object<TcpManager>, expect_cmd: u8, expect_body_len: Option<usize>) -> Result<RecvHeaderInfo,io::Error>{
+pub async fn recv_header(input: &mut TcpStream, expect_cmd: u8, expect_body_len: Option<usize>) -> Result<RecvHeaderInfo,io::Error>{
     let mut header = vec![0u8;FDFS_PROTO_PKG_LEN_SIZE+2];
 
     let recv_len = input.read_exact(&mut header).await?;
