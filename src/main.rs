@@ -12,8 +12,8 @@ async fn main() -> Result<(), io::Error>{
     let path = Path::new(location);
     let file_ext_name = path.extension().unwrap().to_str().unwrap().to_string();
     let file = tokio::fs::read(path).await?;
-    println!("{:?}",StorageClient::upload_file(file, &file_ext_name).await?);
+    println!("{:?}",StorageClient::upload_file(&file, &file_ext_name).await?);
     let file = tokio::fs::read(path).await?;
-    println!("{:?}",StorageClient::upload_file(file, &file_ext_name).await?);
+    println!("{:?}",StorageClient::upload_file(&file, &file_ext_name).await?);
     Ok(())
 }

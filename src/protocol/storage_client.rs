@@ -9,7 +9,7 @@ pub struct StorageClient;
 
 
 impl StorageClient {
-    pub async fn upload_file(file_buff: Vec<u8>, file_ext_name: &str) -> Result<(String,String), io::Error> {
+    pub async fn upload_file(file_buff: &Vec<u8>, file_ext_name: &str) -> Result<(String,String), io::Error> {
         let file_size = file_buff.len();
         if let Ok(storage_servers) = TrackerServer::get_storage_servers(None).await {
             if storage_servers.len() == 0{
@@ -44,7 +44,7 @@ impl StorageClient {
                     offset = header.len() + size_bytes.len();
                     whole_pkg[offset..offset+ext_name_bs.len()].copy_from_slice(&ext_name_bs[..ext_name_bs.len()]);
                     stream.write(&whole_pkg).await?;
-                    stream.write(&file_buff).await?;
+                    stream.write(file_buff).await?;
                     let recv_info = proto_common::recv_package(&mut stream, proto_common::STORAGE_PROTO_CMD_RESP, None).await?;
                     if recv_info.errno != 0 {
                         return Result::Err(io::Error::new(ErrorKind::Other,format!("storage_server返回错误:{}",recv_info.errno)));
