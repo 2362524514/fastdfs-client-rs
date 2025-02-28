@@ -43,8 +43,11 @@ impl StorageClient {
                     whole_pkg[header.len()..header.len()+ size_bytes.len()].copy_from_slice(&size_bytes[..size_bytes.len()]);
                     offset = header.len() + size_bytes.len();
                     whole_pkg[offset..offset+ext_name_bs.len()].copy_from_slice(&ext_name_bs[..ext_name_bs.len()]);
-                    stream.write(&whole_pkg).await?;
-                    stream.write(file_buff).await?;
+                    stream.write_all(&whole_pkg).await?;
+                    stream.flush().await?;
+                    //&whole_pkg转为base64
+                    stream.write_all(file_buff).await?;
+                    stream.flush().await?;
                     let recv_info = proto_common::recv_package(&mut stream, proto_common::STORAGE_PROTO_CMD_RESP, None).await?;
                     if recv_info.errno != 0 {
                         return Result::Err(io::Error::new(ErrorKind::Other,format!("storage_server返回错误:{}",recv_info.errno)));

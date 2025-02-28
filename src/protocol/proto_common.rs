@@ -90,15 +90,14 @@ pub async fn recv_package(input: &mut Object<TcpManager>,expect_cmd:u8,expect_bo
         return Err(io::Error::new(io::ErrorKind::Other,format!("recv errno: {} is not correct, expect errno: 0",header.errno)));
     }
     let mut body = vec![0u8;header.body_len];
-    input.read_exact(&mut body).await?;
+    input.read(&mut body).await?;
     Ok(RecvPackageInfo { errno:0, body })
 }
 
 pub async fn recv_header(input: &mut TcpStream, expect_cmd: u8, expect_body_len: Option<usize>) -> Result<RecvHeaderInfo,io::Error>{
     let mut header = vec![0u8;FDFS_PROTO_PKG_LEN_SIZE+2];
-
-    let recv_len = input.read_exact(&mut header).await?;
-            if recv_len != header.len() {
+    let recv_len = input.read(&mut header).await?;
+    if recv_len != header.len() {
         return Err(io::Error::new(io::ErrorKind::UnexpectedEof,"读取头部信息失败,长度不足!"));
     }
 
@@ -143,10 +142,13 @@ pub async fn recv_header(input: &mut TcpStream, expect_cmd: u8, expect_body_len:
 
 }
 
-pub fn buff2long(bs: &[u8], offset: usize) -> i64 {
-    let mut result: i64 = 0;
-    for i in 0..8 {
-        result |= (bs[offset + i] as i64) << ((7 - i) * 8);
-    }
-    result
+pub fn buff2long(bs: &[u8], offset: usize) -> u64 {
+    ((bs[offset] as u64) << 56) |
+        ((bs[offset + 1] as u64) << 48) |
+        ((bs[offset + 2] as u64) << 40) |
+        ((bs[offset + 3] as u64) << 32) |
+        ((bs[offset + 4] as u64) << 24) |
+        ((bs[offset + 5] as u64) << 16) |
+        ((bs[offset + 6] as u64) << 8) |
+        (bs[offset + 7] as u64)
 }
